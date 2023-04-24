@@ -36,3 +36,6 @@ terraform.rc
 # Test directories
 **/test/*
 test_infrastructure/*
+
+# Log giles
+*.log
