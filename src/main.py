@@ -9,9 +9,21 @@ logger = logging.getLogger('tfstate-compliance')
 ####################
 ### State Parser ###
 ####################
+
 class TFState:
+    ''' 
+    This class is used to parse a Terraform state file and extract the resources and providers. 
+    Attributes:
+        providers: A list of providers used in the Terraform state file.
+        resources: A dictionary of resources used in the Terraform state file.
+        statefile: The path to the Terraform state file.
+    '''
     
     def __init__(self, path):
+        '''
+        Constructor for the TFState class.
+        param path: The path to the Terraform state file.
+        '''
         self.providers = []
         
         tfstate_data = self.read_json(path)
@@ -21,15 +33,26 @@ class TFState:
         self.statefile = path
 
     def toString(self):
+        '''
+        Returns a string representation of the TFState object.
+        '''
         s1 = f"## TFState Object ##\n# Statefile #\n{self.statefile}\n\n# Providers #\n{self.providers}\n\n# Resources #\n{self.resources}\n"
         return s1
         
     def read_json(self, path):
+        '''
+        Reads a JSON file and returns the data as a dictionary.
+        '''
         with open(path, 'r') as file:
             result = json.load(file)
         return result
 
     def parse_provider(self, provider_string):
+        '''
+        Extracts the provider name from a string.
+        param provider_string: The string to extract the provider name from and add to the providers list.
+        Returns: The provider name.
+        '''
         # Extract the provider name from the string
         match = re.search(r'provider\["(.+?)/(.+?)"\]', provider_string)
         if match:
@@ -39,13 +62,16 @@ class TFState:
         return "unknown"
 
     def parse_resources(self, resources_list):
+        '''
+        Parses the resources list and returns a dictionary of resources.
+        param resources_list: The list of resources to parse.
+        Returns: A dictionary of resources.
+        '''
         resources = {}
         for resource in resources_list:
             resource_type = resource['type']
-            # resource_name = resource['name']
             provider = self.parse_provider(resource['provider'])
             resource_key = f"{provider}.{resource_type}"
-            # resource_key = f"{provider}.{resource_type}.{resource_name}"
             resource_instances = resource['instances']
             if resource_key not in resources:
                 resources[resource_key] = resource_instances
@@ -58,16 +84,38 @@ class TFState:
 ##########################
 
 class ComplianceChecker:
+    '''
+    This class is used to check the compliance of a Terraform state file against a compliance file.
+    '''
 
     def __init__(self) -> None:
+        '''
+        Constructor for the ComplianceChecker class.
+        '''
         pass
 
     def read_json(self, path):
+        '''
+        Reads a JSON file and returns the data as a dictionary.
+        '''
         with open(path, 'r') as file:
             result = json.load(file)
         return result
+    
+    def toString(self):
+        '''
+        Returns a string representation of the ComplianceChecker object.
+        '''
+        s1 = f"## ComplianceChecker Object ##\n"
+        return s1
 
     def get_attribute_value(self, attributes, key):
+        '''
+        Returns the value of a key in a dictionary.
+        param attributes: The attributes of the resources parsed from the Terraform state file.
+        param key: The key of the resource to search for in the attributes dictionary.
+        Returns: The value of the key in the dictionary.
+        '''
         keys = key.split('.')
         value = attributes.get(keys[0])
 
@@ -87,6 +135,11 @@ class ComplianceChecker:
         return value
 
     def get_operator_function(self, operator_str):
+        '''
+        Returns the operator function for a given operator string.
+        param operator_str: The operator string to get the operator function for.
+        Returns: The operator function.
+        '''
         operator_map = {
             'eq': operator.eq,
             'neq': operator.ne,
@@ -102,6 +155,12 @@ class ComplianceChecker:
         return operator_map.get(operator_str)
 
     def check_rule(self, rule,attributes):
+        '''
+        Checks if a rule is valid.
+        param rule: The rule to check.
+        param attributes: The attributes of the resources parsed from the Terraform state file.
+        Returns: A tuple containing a boolean indicating if the rule is valid and a string containing the error message if the rule is invalid.
+        '''
         logger.info(f'## Called check_rule ##\n# Attributes:\n{attributes}\n# Rule:\n{rule}')
         # Extract infos from rule
         operator_str = rule.get('operator', '')
@@ -127,6 +186,12 @@ class ComplianceChecker:
         return operator_fn(actual_value, value),''
 
     def check_condition(self, attributes, condition):
+        '''
+        Checks if a condition is valid.
+        param condition: The condition to check.
+        param attributes: The attributes of the resources parsed from the Terraform state file.
+        Returns: A tuple containing a boolean indicating if the condition is valid and a string containing the error message if the condition is invalid.
+        '''
         logger.info(f'## Called check_condition ##\n# Attributes:\n{attributes}\n# Condition:\n{condition}')
         operator_fn = None
 
@@ -149,6 +214,12 @@ class ComplianceChecker:
         return operator_fn(rule_results), ''
 
     def check_compliance(self, parsed_state, rule_path):
+        '''
+        Checks if a Terraform state file is compliant with a compliance file.
+        param parsed_state: The parsed Terraform state file.
+        param rule_path: The path to the compliance file.
+        Returns: A dictionary containing the compliance result.
+        '''
         rule = self.read_json(rule_path)
         provider = rule['provider']
         resource_type = rule['resource_type']
