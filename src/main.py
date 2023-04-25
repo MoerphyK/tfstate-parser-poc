@@ -235,21 +235,31 @@ class ComplianceChecker:
         resource_type = rule['resource_type']
         condition = rule['condition']
         resources = parsed_state.get(f'{provider}.{resource_type}', [])
-
-        for resource in resources:
-            attributes = resource.get('attributes', {})
-            is_compliant, reason = self.check_condition(attributes, condition)
-
-        result = {
-            'rule_name': rule['rule_name'],
-            'compliance_level': rule['compliance_level'],
-            'resource_type': resource_type,
-            'resource_id': attributes.get('id', ''),
-            'compliance_status': is_compliant,
-            'reason': reason
-        }
         
-        return result
+        if resources = []:
+            result =  {
+                'rule_name': rule['rule_name'],
+                'compliance_level': rule['compliance_level'],
+                'resource_type': resource_type,
+                'resource_id': 'n/a',
+                'compliance_status': True,
+                'reason': 'Resource type is not found in the tfstate file.'
+            }
+            return result
+        else:
+            for resource in resources:
+                attributes = resource.get('attributes', {})
+                is_compliant, reason = self.check_condition(attributes, condition)
+
+            result = {
+                'rule_name': rule['rule_name'],
+                'compliance_level': rule['compliance_level'],
+                'resource_type': resource_type,
+                'resource_id': attributes.get('id', ''),
+                'compliance_status': is_compliant,
+                'reason': reason
+            }
+            return result
 
 def main():
     ### TODO: Validation of Input
