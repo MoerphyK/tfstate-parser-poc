@@ -236,7 +236,7 @@ class ComplianceChecker:
         condition = rule['condition']
         resources = parsed_state.get(f'{provider}.{resource_type}', [])
         
-        if resources = []:
+        if resources == []:
             result =  {
                 'rule_name': rule['rule_name'],
                 'compliance_level': rule['compliance_level'],
