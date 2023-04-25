@@ -19,18 +19,28 @@ class TFState:
         statefile: The path to the Terraform state file.
     '''
     
-    def __init__(self, path):
+    def __init__(self, path=None, state_dict=None):
         '''
         Constructor for the TFState class.
         param path: The path to the Terraform state file.
+        param state_dict: The state passed as a dictonary.
         '''
         self.providers = []
-        
-        tfstate_data = self.read_json(path)
+        tfstate_data = {}
+        if path is None and state_dict is None:
+            logger.error('TFState object could not be created. No path or state_dict has been passed.')
+            raise Exception('TFState object could not be created. No path or state_dict has been passed.')
+        if path is not None and state_dict is not None:
+            raise Exception('TFState object could not be created. Both path and state_dict have been passed. Choose one.')
+        elif path is None and state_dict is not None:
+            tfstate_data = state_dict
+            self.statefile = 'Received dictionary'
+        elif path is not None and state_dict is None:
+            tfstate_data = self.read_json(path)
+            self.statefile = path
         resources_list = tfstate_data['resources']
     
         self.resources = self.parse_resources(resources_list)
-        self.statefile = path
 
     def toString(self):
         '''
