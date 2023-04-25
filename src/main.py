@@ -248,6 +248,9 @@ class ComplianceChecker:
             return result
         else:
             for resource in resources:
+                ## TODO: Questionable solution.
+                if isinstance(resource, list):
+                    resource = resource[0]
                 attributes = resource.get('attributes', {})
                 is_compliant, reason = self.check_condition(attributes, condition)
 
