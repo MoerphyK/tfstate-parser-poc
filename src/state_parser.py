@@ -17,7 +17,11 @@ class TFState:
         resources: A dictionary of resources used in the Terraform state file.
         statefile: The path to the Terraform state file.
     '''
-    
+
+    #####################
+    #### Konstruktor ####
+    #####################
+
     def __init__(self, path=None, state_dict=None):
         '''
         Constructor for the TFState class.
@@ -29,32 +33,24 @@ class TFState:
         if path is None and state_dict is None:
             logger.error('TFState object could not be created. No path or state_dict has been passed.')
             raise Exception('TFState object could not be created. No path or state_dict has been passed.')
+        
         if path is not None and state_dict is not None:
             raise Exception('TFState object could not be created. Both path and state_dict have been passed. Choose one.')
+        
         elif path is None and state_dict is not None:
             tfstate_data = state_dict
             self.statefile = 'Received dictionary'
+        
         elif path is not None and state_dict is None:
             tfstate_data = self.read_json(path)
             self.statefile = path
+        
         resources_list = tfstate_data['resources']
-    
         self.resources = self.parse_resources(resources_list)
 
-    def toString(self):
-        '''
-        Returns a string representation of the TFState object.
-        '''
-        s1 = f"## TFState Object ##\n# Statefile #\n{self.statefile}\n\n# Providers #\n{self.providers}\n\n# Resources #\n{self.resources}\n"
-        return s1
-        
-    def read_json(self, path):
-        '''
-        Reads a JSON file and returns the data as a dictionary.
-        '''
-        with open(path, 'r') as file:
-            result = json.load(file)
-        return result
+    ##########################
+    #### Parser Functions ####
+    ##########################
 
     def parse_provider(self, provider_string):
         '''
@@ -69,6 +65,7 @@ class TFState:
                 self.providers.append(match.group(2))
             return match.group(2)
         return "unknown"
+
 
     def parse_resources(self, resources_list):
         '''
@@ -87,3 +84,22 @@ class TFState:
             else:
                 resources[resource_key].append(resource_instances)
         return resources
+    
+    ##########################
+    #### Helper Functions ####
+    ##########################
+
+    def toString(self):
+        '''
+        Returns a string representation of the TFState object.
+        '''
+        s1 = f"## TFState Object ##\n# Statefile #\n{self.statefile}\n\n# Providers #\n{self.providers}\n\n# Resources #\n{self.resources}\n"
+        return s1
+        
+    def read_json(self, path):
+        '''
+        Reads a JSON file and returns the data as a dictionary.
+        '''
+        with open(path, 'r') as file:
+            result = json.load(file)
+        return result

@@ -6,7 +6,6 @@ import logging
 logging.basicConfig(filename='tfstate-compliance-checker.log', encoding='utf-8', level=logging.DEBUG, format='%(asctime)s %(name)s %(levelname)s %(message)s')
 logger = logging.getLogger('tfstate-compliance-checker')
 
-
 ##########################
 ### Compliance Checker ###
 ##########################
@@ -21,21 +20,6 @@ class ComplianceChecker:
         Constructor for the ComplianceChecker class.
         '''
         pass
-
-    def read_json(self, path):
-        '''
-        Reads a JSON file and returns the data as a dictionary.
-        '''
-        with open(path, 'r') as file:
-            result = json.load(file)
-        return result
-    
-    def toString(self):
-        '''
-        Returns a string representation of the ComplianceChecker object.
-        '''
-        s1 = f"## ComplianceChecker Object ##\n"
-        return s1
 
     def get_attribute_value(self, attributes, key):
         '''
@@ -61,26 +45,6 @@ class ComplianceChecker:
                 break
 
         return value
-
-    def get_operator_function(self, operator_str):
-        '''
-        Returns the operator function for a given operator string.
-        param operator_str: The operator string to get the operator function for.
-        Returns: The operator function.
-        '''
-        operator_map = {
-            'eq': operator.eq,
-            'neq': operator.ne,
-            'contains': operator.contains,
-            'not_contains': lambda a, b: not operator.contains(a, b),
-            'exists': lambda a, b: isinstance(a, str) or bool(a) == b, ## Does not work with NullType
-            'not_exists': lambda a, b: isinstance(a, str) or bool(a) != b, ## Does not work with NullType
-            'matches': lambda a, b: bool(re.match(str(b), str(a))), ## Does not work with dict
-            'not_matches': lambda a, b: not bool(re.match(str(b), str(a))), ## Does not work with dict
-            'and': all, ## Works with list of bools
-            'or': any ## Works with list of bools
-        }
-        return operator_map.get(operator_str)
 
     def check_rule(self, rule,attributes):
         '''
@@ -164,6 +128,7 @@ class ComplianceChecker:
                 'reason': 'Resource type is not found in the tfstate file.'
             }
             return result
+        
         else:
             for resource in resources:
                 ## TODO: Questionable solution.
@@ -181,3 +146,42 @@ class ComplianceChecker:
                 'reason': reason
             }
             return result
+        
+    ##########################
+    #### Helper Functions ####
+    ##########################
+
+    def get_operator_function(self, operator_str):
+        '''
+        Returns the operator function for a given operator string.
+        param operator_str: The operator string to get the operator function for.
+        Returns: The operator function.
+        '''
+        operator_map = {
+            'eq': operator.eq,
+            'neq': operator.ne,
+            'contains': operator.contains,
+            'not_contains': lambda a, b: not operator.contains(a, b),
+            'exists': lambda a, b: isinstance(a, str) or bool(a) == b, ## Does not work with NullType
+            'not_exists': lambda a, b: isinstance(a, str) or bool(a) != b, ## Does not work with NullType
+            'matches': lambda a, b: bool(re.match(str(b), str(a))), ## Does not work with dict
+            'not_matches': lambda a, b: not bool(re.match(str(b), str(a))), ## Does not work with dict
+            'and': all, ## Works with list of bools
+            'or': any ## Works with list of bools
+        }
+        return operator_map.get(operator_str)
+
+    def read_json(self, path):
+        '''
+        Reads a JSON file and returns the data as a dictionary.
+        '''
+        with open(path, 'r') as file:
+            result = json.load(file)
+        return result
+    
+    def toString(self):
+        '''
+        Returns a string representation of the ComplianceChecker object.
+        '''
+        s1 = f"## ComplianceChecker Object ##\n"
+        return s1
