@@ -37,5 +37,12 @@ terraform.rc
 **/test/*
 test_infrastructure/*
 
-# Log giles
+# Log files
 *.log
+
+# Ignore all .pyc files
+*.pyc
+__pychace__/
+
+# Ignore all output files
+output.json
